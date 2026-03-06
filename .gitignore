@@ -12,7 +12,11 @@ __pycache__/
 # Build / output
 dist/
 build/
+.next/
 *.log
+
+# Prisma
+prisma/migrations/**/migration_lock.toml
 
 # IDE / OS
 .idea/
