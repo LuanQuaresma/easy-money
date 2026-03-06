@@ -120,7 +120,7 @@ easy-money/
 ## Next Phases
 
 1. ~~Architecture + folder structure~~  
-2. Database schema (Prisma + PostgreSQL)  
+2. ~~Database schema (Prisma + PostgreSQL)~~  
 3. Backend API structure  
 4. Authentication (NextAuth)  
 5. Frontend layout + i18n  

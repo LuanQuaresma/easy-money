@@ -1,5 +1,5 @@
-// Easy Money - Database Schema
-// Phase 2 will expand entities: Transaction, Income, Expense, FreelancePayment, Category, BudgetRule, etc.
+// Easy Money - Database Schema (Phase 2)
+// PostgreSQL + Prisma. All monetary values in BRL (Decimal).
 
 generator client {
   provider = "prisma-client-js"
@@ -10,6 +10,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============== NextAuth ==============
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -19,5 +21,239 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  accounts         Account[]
+  sessions         Session[]
+  categories       Category[]
+  transactions     Transaction[]
+  expenses         Expense[]
+  fixedIncomes     FixedIncome[]
+  freelancePayments FreelancePayment[]
+  budgetRule       BudgetRule?
+  financialInsights FinancialInsight[]
+  investmentSimulations InvestmentSimulation[]
+
   @@map("users")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?  @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============== Categories (50/30/20) ==============
+
+enum CategoryType {
+  NECESSITY   // 50% - Necessidades
+  LIFESTYLE   // 30% - Estilo de vida
+  INVESTMENT  // 20% - Investimentos
+}
+
+model Category {
+  id        String       @id @default(cuid())
+  name      String
+  type      CategoryType
+  userId    String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
+  transactions Transaction[]
+
+  @@unique([userId, name])
+  @@map("categories")
+}
+
+// ============== Ledger (unified movements) ==============
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  amount      Decimal         @db.Decimal(12, 2)
+  date        DateTime
+  type        TransactionType
+  description String?
+  userId      String
+  categoryId  String?
+  createdAt   DateTime        @default(now())
+
+  // Optional links to source (expense, fixed income, freelance payment)
+  expenseId         String?
+  fixedIncomeId     String?
+  freelancePaymentId String?
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  expense    Expense?   @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  fixedIncome FixedIncome? @relation(fields: [fixedIncomeId], references: [id], onDelete: SetNull)
+  freelancePayment FreelancePayment? @relation(fields: [freelancePaymentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, date])
+  @@index([userId, type])
+  @@map("transactions")
+}
+
+// ============== Fixed Income (salary, rent, etc.) ==============
+
+enum IncomeFrequency {
+  MONTHLY
+  BIWEEKLY
+  WEEKLY
+}
+
+model FixedIncome {
+  id          String          @id @default(cuid())
+  name        String
+  amount      Decimal         @db.Decimal(12, 2)
+  frequency   IncomeFrequency @default(MONTHLY)
+  paymentDay  Int             // 1-31
+  userId      String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("fixed_incomes")
+}
+
+// ============== Variable Income (Freelancer) ==============
+
+enum FreelancePaymentStatus {
+  PENDING   // pendente
+  INVOICED  // faturado
+  RECEIVED  // recebido
+  OVERDUE   // atrasado
+}
+
+model FreelancePayment {
+  id                  String                @id @default(cuid())
+  client              String
+  projectName         String
+  amount              Decimal               @db.Decimal(12, 2)
+  workDate            DateTime
+  expectedPaymentDate DateTime
+  status              FreelancePaymentStatus @default(PENDING)
+  userId              String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId, status])
+  @@map("freelance_payments")
+}
+
+// ============== Expenses ==============
+
+enum ExpensePaymentStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
+model Expense {
+  id            String               @id @default(cuid())
+  name          String
+  categoryId    String
+  amount        Decimal              @db.Decimal(12, 2)
+  dueDate       DateTime
+  recurring     Boolean              @default(false)
+  paymentStatus ExpensePaymentStatus @default(PENDING)
+  userId        String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  transactions Transaction[]
+
+  @@index([userId, dueDate])
+  @@index([userId, paymentStatus])
+  @@map("expenses")
+}
+
+// ============== Budget (50/30/20) ==============
+
+model BudgetRule {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  necessityPercent   Decimal  @db.Decimal(5, 2) @default(50)   // Necessidades
+  lifestylePercent   Decimal  @db.Decimal(5, 2) @default(30)   // Estilo de vida
+  investmentPercent  Decimal  @db.Decimal(5, 2) @default(20)   // Investimentos
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("budget_rules")
+}
+
+// ============== Financial Insights (AI / smart tips) ==============
+
+model FinancialInsight {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String   @db.Text
+  type      String?  // e.g. "spending_alert", "prediction", "savings_tip"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("financial_insights")
+}
+
+// ============== Investment Simulator (saved simulations) ==============
+
+model InvestmentSimulation {
+  id            String   @id @default(cuid())
+  userId        String
+  monthlyAmount Decimal @db.Decimal(12, 2)
+  interestRate  Decimal @db.Decimal(5, 2) // e.g. 0.5 = 0.5% per month
+  years         Int
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("investment_simulations")
 }
