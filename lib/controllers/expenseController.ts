@@ -19,7 +19,7 @@ const statusBodySchema = z.object({
 });
 
 export async function listExpenses(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -38,10 +38,10 @@ export async function listExpenses(request: NextRequest) {
 }
 
 export async function getExpenseById(
-  _request: NextRequest,
+  request: NextRequest,
   { id }: { id: string }
 ) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -53,7 +53,7 @@ export async function getExpenseById(
 }
 
 export async function createExpense(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -75,7 +75,7 @@ export async function updateExpenseStatus(
   request: NextRequest,
   { id }: { id: string }
 ) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -96,10 +96,10 @@ export async function updateExpenseStatus(
 }
 
 export async function deleteExpense(
-  _request: NextRequest,
+  request: NextRequest,
   { id }: { id: string }
 ) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }

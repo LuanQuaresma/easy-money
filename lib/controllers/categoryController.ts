@@ -10,8 +10,8 @@ const createBodySchema = z.object({
   type: z.nativeEnum(CategoryType),
 });
 
-export async function listCategories() {
-  const userId = await getSessionUserId();
+export async function listCategories(request: NextRequest) {
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -20,7 +20,7 @@ export async function listCategories() {
 }
 
 export async function createCategory(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }

@@ -17,7 +17,7 @@ const createBodySchema = z.object({
 });
 
 export async function listTransactions(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -34,10 +34,10 @@ export async function listTransactions(request: NextRequest) {
 }
 
 export async function getTransactionById(
-  _request: NextRequest,
+  request: NextRequest,
   { id }: { id: string }
 ) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -49,7 +49,7 @@ export async function getTransactionById(
 }
 
 export async function createTransaction(request: NextRequest) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
@@ -69,10 +69,10 @@ export async function createTransaction(request: NextRequest) {
 }
 
 export async function deleteTransaction(
-  _request: NextRequest,
+  request: NextRequest,
   { id }: { id: string }
 ) {
-  const userId = await getSessionUserId();
+  const userId = await getSessionUserId(request);
   if (!userId) {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }

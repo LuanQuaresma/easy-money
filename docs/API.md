@@ -2,13 +2,13 @@
 
 Request flow: **Route → Controller → Service → Repository → Prisma**.
 
-## Auth (development)
+## Auth
 
-Until Phase 4 (NextAuth), pass the user id via header:
+Protected endpoints use **NextAuth** session (JWT). The client must send the session cookie (set automatically after `signIn()`). No header needed.
 
-- `x-user-id: <cuid>` — required for all protected endpoints.
-
-Or set `DEV_USER_ID` in `.env` to a valid user id for development.
+- **Login:** `POST /api/auth/signin` (NextAuth) or use the `/login` page.
+- **Register:** `POST /api/auth/register` with `{ email, password, name? }`.
+- **Session:** `getSessionUserId(request)` in controllers reads the JWT from the request cookie.
 
 ## Endpoints
 

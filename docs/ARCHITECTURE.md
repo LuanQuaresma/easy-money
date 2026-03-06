@@ -122,7 +122,7 @@ easy-money/
 1. ~~Architecture + folder structure~~  
 2. ~~Database schema (Prisma + PostgreSQL)~~  
 3. ~~Backend API structure~~  
-4. Authentication (NextAuth)  
+4. ~~Authentication (NextAuth)~~  
 5. Frontend layout + i18n  
 6. Dashboard UI  
 7. Finance modules (income, expenses, budget)  

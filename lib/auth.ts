@@ -1,23 +1,31 @@
-import { headers } from "next/headers";
+import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
+
+const secret = process.env.NEXTAUTH_SECRET;
 
 /**
- * Returns the current user id from the request context.
- * Phase 4 will replace this with NextAuth getServerSession().
- * Until then: uses x-user-id header for development (set in frontend or API client).
+ * Returns the current user id from the NextAuth JWT (server-side).
+ * Pass the request from the Route Handler so cookies can be read.
  */
-export async function getSessionUserId(): Promise<string | null> {
-  const headersList = await headers();
-  const userId = headersList.get("x-user-id");
-  if (userId) return userId;
-  // Fallback for dev when no auth: use env seed user (optional)
-  return process.env.DEV_USER_ID ?? null;
+export async function getSessionUserId(
+  request: NextRequest
+): Promise<string | null> {
+  if (!secret) return null;
+  const token = await getToken({
+    req: request,
+    secret,
+    secureCookie: process.env.NODE_ENV === "production",
+  });
+  return (token?.id as string) ?? null;
 }
 
 /**
- * Throws if user is not authenticated. Use in API routes that require auth.
+ * Throws if user is not authenticated.
  */
-export async function requireUserId(): Promise<string> {
-  const userId = await getSessionUserId();
+export async function requireUserId(
+  request: NextRequest
+): Promise<string> {
+  const userId = await getSessionUserId(request);
   if (!userId) {
     throw new Error("UNAUTHORIZED");
   }
