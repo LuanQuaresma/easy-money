@@ -21,9 +21,9 @@ NextAuth v4 with **Credentials** provider (email + password) and **JWT** session
 
 | Path | Description |
 |------|-------------|
-| `/login` | Login form (redirects to `callbackUrl` or `/dashboard`) |
-| `/register` | Registration form |
-| `/dashboard` | Protected; redirects to `/login` if not authenticated |
+| `/{locale}/login` | Login form (redirects to `callbackUrl` or `/{locale}/dashboard`) |
+| `/{locale}/register` | Registration form |
+| `/{locale}/dashboard` | Protected; redirects to `/{locale}/login` if not authenticated |
 | `/api/auth/[...nextauth]` | NextAuth handlers (signin, signout, session, etc.) |
 | `/api/auth/register` | Create account (email, password, name) |
 

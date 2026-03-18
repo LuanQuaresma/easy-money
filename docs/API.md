@@ -6,7 +6,7 @@ Request flow: **Route → Controller → Service → Repository → Prisma**.
 
 Protected endpoints use **NextAuth** session (JWT). The client must send the session cookie (set automatically after `signIn()`). No header needed.
 
-- **Login:** `POST /api/auth/signin` (NextAuth) or use the `/login` page.
+- **Login:** `POST /api/auth/signin` (NextAuth) or use the `/{locale}/login` page.
 - **Register:** `POST /api/auth/register` with `{ email, password, name? }`.
 - **Session:** `getSessionUserId(request)` in controllers reads the JWT from the request cookie.
 
