@@ -184,6 +184,33 @@ export function DashboardClient({
           <p className="text-slate-600 dark:text-slate-400">
             {t(locale, "dashboard.greeting", { name: userName })}
           </p>
+
+          <nav className="flex flex-wrap gap-2 mt-3">
+            <Link
+              href={`/${locale}/dashboard`}
+              className="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              {t(locale, "dashboard.nav.overview")}
+            </Link>
+            <Link
+              href={`/${locale}/dashboard/income`}
+              className="rounded-md bg-slate-800 dark:bg-slate-600 px-3 py-1 text-sm font-medium text-white hover:bg-slate-700 dark:hover:bg-slate-500"
+            >
+              {t(locale, "dashboard.nav.income")}
+            </Link>
+            <Link
+              href={`/${locale}/dashboard/expenses`}
+              className="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              {t(locale, "dashboard.nav.expenses")}
+            </Link>
+            <Link
+              href={`/${locale}/dashboard/budget`}
+              className="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              {t(locale, "dashboard.nav.budget")}
+            </Link>
+          </nav>
         </header>
 
         {loading ? (
